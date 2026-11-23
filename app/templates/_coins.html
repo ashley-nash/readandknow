@@ -1,0 +1,31 @@
+<div class="coin-widget" data-coin-widget>
+  <div class="coin-stage" aria-hidden="true">
+    {% for i in range(3) %}
+    <div class="coin"><div class="face"><span class="t">观</span><span class="b">星</span><span class="r">知</span><span class="l">己</span></div><div class="face back"></div></div>
+    {% endfor %}
+  </div>
+  <p class="toss-count" aria-live="polite" data-status data-msg-start="{{ s('默念你的问题，然后摇第一爻') }}"
+     data-msg-next="{{ s('继续摇第 {n} 爻') }}" data-msg-done="{{ s('六爻已成，卦象已定。') }}"
+     data-msg-btn="{{ s('摇第 {n} 爻') }}" data-msg-finished="{{ s('已摇完') }}" data-msg-manual="{{ s('已录入六爻。') }}">{{ s('默念你的问题，然后摇第一爻') }}</p>
+  <div class="cast-lines" data-lines></div>
+  <input type="hidden" name="tosses" value="" data-tosses>
+  <input type="hidden" name="client_time" value="" data-client-time>
+  <div style="text-align:center"><button class="btn" type="button" data-toss>{{ s('摇第 {n} 爻', n=1) }}</button></div>
+  <details style="margin-top:1rem">
+    <summary class="hint" style="cursor:pointer">{{ t("我用自己的三枚硬币摇（手动录入）", inline=True) }}</summary>
+    <p class="hint">{{ t("从初爻（第一次）到上爻（第六次），选择每次的结果。背面记 3，字面记 2。") }}</p>
+    <div class="row2">
+      {% for n in ['初爻','二爻','三爻','四爻','五爻','上爻'] %}
+      <label>{{ n }}
+        <select data-manual>
+          <option value="">—</option>
+          <option value="9">{{ s("三个背面（老阳，动）") }}</option>
+          <option value="8">{{ s("两背一字（少阴）") }}</option>
+          <option value="7">{{ s("一背两字（少阳）") }}</option>
+          <option value="6">{{ s("三个字面（老阴，动）") }}</option>
+        </select>
+      </label>
+      {% endfor %}
+    </div>
+  </details>
+</div>

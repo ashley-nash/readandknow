@@ -1,0 +1,17 @@
+<div class="table-wrap">
+<table class="list">
+  <thead><tr><th>{{ t("订单", inline=True) }}</th><th>{{ t("服务", inline=True) }}</th><th>{{ t(other_label, inline=True) }}</th><th>{{ t("金额", inline=True) }}</th><th>{{ t("状态", inline=True) }}</th><th>{{ t("时间", inline=True) }}</th></tr></thead>
+  <tbody>
+  {% for o in rows %}
+    <tr>
+      <td><a href="/orders/{{ o.id }}">#{{ o.id }}</a></td>
+      <td>{{ o.title }} <span class="tag">{{ t(o.kind|kind, inline=True) }}</span></td>
+      <td>{{ o[other_key] }}</td>
+      <td>{{ o.price|money }}</td>
+      <td><span class="badge {{ o.status|status_color }}">{{ t(o.status|status, inline=True) }}</span></td>
+      <td><small>{{ o.created_at[:16] }}</small></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>

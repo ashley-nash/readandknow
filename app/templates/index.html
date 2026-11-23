@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% import "_sym.html" as sym with context %}
+{% block content %}
+{% include "hero_" ~ theme ~ ".html" %}
+
+<nav class="doors doors-4 wrap" aria-label="tools">
+  <a class="door" href="/bazi">
+    <div class="glyph g-pillars" aria-hidden="true"><i style="height:64px"></i><i style="height:52px"></i><i style="height:64px;background:var(--cinnabar)"></i><i style="height:44px"></i></div>
+    <h3>{{ t("八字排盘") }}</h3>
+    <p>{{ t("用出生的年、月、日、时排出四柱，看五行、十神和每十年一步的大运。") }}</p>
+    <span class="go">{{ t("开始排八字", inline=True) }}</span>
+  </a>
+  <a class="door" href="/ziwei">
+    <div class="glyph g-palaces" aria-hidden="true">
+      <i></i><i></i><i></i><i></i><i></i><i class="c"></i><i class="c"></i><i></i><i class="m"></i><i class="c"></i><i class="c"></i><i></i><i></i><i></i><i></i><i></i>
+    </div>
+    <h3>{{ t("紫微命盘") }}</h3>
+    <p>{{ t("按农历生辰安十二宫、十四主星与四化，看命宫主星的礼物与课题。") }}</p>
+    <span class="go">{{ t("排我的命盘", inline=True) }}</span>
+  </a>
+  <a class="door" href="/liuyao">
+    <div class="glyph g-lines" aria-hidden="true"><i></i><i class="yin"></i><i></i><i class="yin"></i><i class="yin"></i><i></i></div>
+    <h3>{{ t("六爻起卦") }}</h3>
+    <p>{{ t("心里有一件具体的事？默念你的问题，摇六次铜钱，得到一卦作为参考。") }}</p>
+    <span class="go">{{ t("摇一卦", inline=True) }}</span>
+  </a>
+  <a class="door" href="/hepan">
+    <div class="glyph g-rings" aria-hidden="true"><i></i><i></i></div>
+    <h3>{{ t("八字合盘") }}</h3>
+    <p>{{ t("两个人的八字放在一起，看你们的默契之处，和需要彼此练习的地方。") }}</p>
+    <span class="go">{{ t("开始合盘", inline=True) }}</span>
+  </a>
+</nav>
+
+<section>
+  <div class="wrap">
+    <h2>{{ t("符号图鉴") }}</h2>
+    <p class="motto">{{ t("人无完人，各有利弊。") }}</p>
+    <p class="muted">{{ t("命理里没有好坏分数。每个天干、生肖和十神，都同时带来一份礼物和一个课题。把鼠标停在字上（手机上点一下）看看。") }}</p>
+    <div class="atlas">
+      <div class="atlas-row">
+        <h3>{{ t("五行") }}</h3>
+        <div class="atlas-strip">{% for w in ["木","火","土","金","水"] %}{{ sym.element(w) }}{% endfor %}</div>
+      </div>
+      <div class="atlas-row">
+        <h3>{{ t("十天干") }}</h3>
+        <p>{{ t("天干按五行和阴阳分成十种，日柱的天干就是“你自己”。") }}</p>
+        <div class="atlas-strip">{% for g in "甲乙丙丁戊己庚辛壬癸" %}{{ sym.stem(g) }}{% endfor %}</div>
+      </div>
+      <div class="atlas-row">
+        <h3>{{ t("十二地支 · 生肖") }}</h3>
+        <p>{{ t("每个地支对应一个生肖、一个时辰和一种五行。") }}</p>
+        <div class="atlas-strip">{% for z in "子丑寅卯辰巳午未申酉戌亥" %}{{ sym.animal(z) }}{% endfor %}</div>
+      </div>
+      <div class="atlas-row">
+        <h3>{{ t("十神") }}</h3>
+        <p>{{ t("十神是其他字和“你”的关系：生你的、你生的、克你的、你克的、和你一样的。") }}</p>
+        <div class="atlas-strip">{% for n in SYM.TEN_GOD_ORDER %}{{ sym.tengod(n) }}{% endfor %}</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="star">
+
+<section>
+  <div class="wrap">
+    <h2>{{ t("怎样预约一次解读") }}</h2>
+    <ol class="steps">
+      <li><b>{{ t("免费排盘") }}</b><span>{{ t("先看看自己的命盘或卦象，心里有个底。") }}</span></li>
+      <li><b>{{ t("选择分析师") }}</b><span>{{ t("看擅长方向、价格和真实客户的评价，选一位合眼缘的。") }}</span></li>
+      <li><b>{{ t("下单并付款") }}</b><span>{{ t("填好出生信息或问题，按说明付款，平台确认后分析师开始解读。") }}</span></li>
+      <li><b>{{ t("收到解读报告") }}</b><span>{{ t("报告会出现在订单里，看完还有疑问，可以继续留言追问。") }}</span></li>
+    </ol>
+  </div>
+</section>
+
+<hr class="star">
+
+<section>
+  <div class="wrap">
+    <h2>{{ t("分析师") }}</h2>
+    {% if analysts %}
+      <div class="analyst-list">
+        {% for a in analysts %}{% include "_analyst_card.html" %}{% endfor %}
+      </div>
+      <p style="margin-top:1.4rem"><a href="/analysts">{{ t("查看全部分析师", inline=True) }}</a></p>
+    {% else %}
+      <div class="empty">
+        <p>{{ t("第一批分析师正在入驻。如果你是我们的抖音会员，可以用会员邀请码注册成为分析师。") }}</p>
+        <a class="btn" href="/register?role=analyst">{{ t("成为分析师") }}</a>
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+{% if reviews %}
+<section>
+  <div class="wrap">
+    <h2>{{ t("客户的话") }}</h2>
+    <div class="voices">
+      {% for r in reviews %}
+      <blockquote class="voice">
+        <p>{{ r.comment }}</p>
+        <small><span class="rating">{{ r.rating|stars }}</span> · {{ t(r.kind|kind, inline=True) }} · <a href="/analysts/{{ r.analyst_id }}">{{ r.analyst_name }}</a></small>
+      </blockquote>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<hr class="star">
+
+<section>
+  <div class="wrap split">
+    <div>
+      <h2>{{ t("我们的承诺") }}</h2>
+      <p>{{ t("命理不是宿命，而是一面帮你看清自己的镜子。我们不给人打分，只帮你看见自己的礼物和课题。") }}</p>
+    </div>
+    <dl class="kv">
+      <dt>{{ t("排盘可查证") }}</dt><dd>{{ t("八字按节气精确换算；紫微斗数排盘与开源排盘库逐项比对一致。") }}</dd>
+      <dt>{{ t("分析师有门槛") }}</dt><dd>{{ t("分析师需凭会员邀请码注册，并经站长审核后才会上线。") }}</dd>
+      <dt>{{ t("先确认再开始") }}</dt><dd>{{ t("平台确认收到付款后，分析师才会接单，订单每一步都看得见。") }}</dd>
+      <dt>{{ t("隐私只给对的人") }}</dt><dd>{{ t("你的出生信息和问题只有你选择的分析师能看到。") }}</dd>
+      <dt>{{ t("评价都是真的") }}</dt><dd>{{ t("只有完成订单的客户才能评价，我们不编造、不删改评价。") }}</dd>
+    </dl>
+  </div>
+</section>
+{% endblock %}

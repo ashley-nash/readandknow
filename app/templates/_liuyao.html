@@ -1,0 +1,57 @@
+{% import "_sym.html" as sym with context %}
+<div class="chart-head">
+  {% if chart.question %}<span>{{ t("所问之事", inline=True) }} <b>{{ chart.question }}</b></span>{% endif %}
+  <span>{{ t("起卦", inline=True) }} {{ chart.time }}</span>
+  <span>{{ chart.ganzhi_date }}</span>
+  <span>{{ t("旬空", inline=True) }} {{ chart.xunkong }}</span>
+</div>
+
+<div class="gua-pair">
+  <div class="gua">
+    <h3>{{ chart.ben.name }}</h3>
+    {% if chart.ben.name_tr and lang_mode != 'zh' %}<div class="sub" style="font-family:var(--latin);font-size:1rem">{{ one(chart.ben.name_tr) }}</div>{% endif %}
+    <div class="sub">{{ t("本卦", inline=True) }} · {{ chart.ben.image }} · {{ chart.ben.palace }}（{{ chart.ben.palace_wx }}）</div>
+    <div class="yao-table">
+      {% for y in chart.ben.yao|reverse %}
+      <div class="yao-row {% if y.moving %}moving{% endif %}">
+        <span class="muted">{{ y.liushen }}</span>
+        <span>{{ y.liuqin }}</span>
+        <span class="wx-{{ y.wx }}">{{ y.ganzhi[0] }}{{ sym.branch(y.ganzhi[1]) }}{{ y.wx }}</span>
+        <div class="yao-line {% if not y.yang %}yin{% endif %}" title="{{ y.pos }}爻"></div>
+        <span>{% if y.shi %}<i class="sy shi">世</i>{% elif y.ying %}<i class="sy ying">应</i>{% endif %}{% if y.moving %}<span class="mark">{{ '○' if y.yang else '×' }}</span>{% endif %}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% if chart.bian %}
+  <div class="gua bian">
+    <h3>{{ chart.bian.name }}</h3>
+    {% if chart.bian.name_tr and lang_mode != 'zh' %}<div class="sub" style="font-family:var(--latin);font-size:1rem">{{ one(chart.bian.name_tr) }}</div>{% endif %}
+    <div class="sub">{{ t("变卦", inline=True) }} · {{ chart.bian.image }} · {{ chart.bian.palace }}</div>
+    <div class="yao-table">
+      {% for y in chart.bian.yao|reverse %}
+      <div class="yao-row">
+        <span>{{ y.liuqin }}</span>
+        <span class="wx-{{ y.wx }}">{{ y.ganzhi }}{{ y.wx }}</span>
+        <div class="yao-line {% if not y.yang %}yin{% endif %}"></div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% else %}
+  <div class="gua bian">
+    <h3>{{ t("静卦") }}</h3>
+    <div class="sub">{{ t("六爻皆静，没有变卦", inline=True) }}</div>
+    <p style="margin-top:1rem">{{ t("静卦代表事情目前比较稳定，短期内不会有大的变化，重点看世爻与用神本身的状态。") }}</p>
+  </div>
+  {% endif %}
+</div>
+<p class="hint" style="margin-top:.6rem">{{ t("○ 为老阳动爻、× 为老阴动爻。左列为六神，其次为六亲与纳甲干支。") }}</p>
+
+<div class="reading">
+  <div class="panel">
+    <h3>{{ t("卦象寄语", inline=True) }} · {{ chart.ben.name }}</h3>
+    <p class="heal">{{ L(chart.ben.message) }}</p>
+    {% if chart.bian %}<p><b>{{ t("走向", inline=True) }} · {{ chart.bian.name }}</b></p><p class="heal">{{ L(chart.bian.message) }}</p>{% endif %}
+  </div>
+</div>

@@ -1,0 +1,80 @@
+{% import "_sym.html" as sym with context %}
+<div class="chart-head">
+  <span>{{ t("公历", inline=True) }} <b>{{ chart.solar }}</b></span>
+  <span><b>{{ chart.lunar }}</b></span>
+  <span>{{ t(chart.gender, inline=True) }} · {{ t("属相", inline=True) }} {{ L(SYM.BRANCHES[chart.pillars[0].zhi].animal, inline=True) }}</span>
+</div>
+
+<p class="no-score">{{ t("悬停或点一下任何一个字，看看它带来的礼物和课题。这里没有分数，只有不同的样子。") }}</p>
+
+<div class="pillars">
+  {% for p in chart.pillars %}
+  <div class="pillar {% if loop.index == 3 %}day{% endif %}">
+    <div class="lbl">{{ t(p.label) }}</div>
+    <div class="ss">{% if p.shishen == '日主' %}{{ t('日主', inline=True) }}{% else %}{{ sym.tengod(p.shishen) }}{% endif %}</div>
+    <div class="gz">{{ sym.stem(p.gan) }}{{ sym.branch(p.zhi) }}</div>
+    <div class="hide">
+      {% for h in p.hide %}<span class="wx-{{ h.wx }}">{{ h.gan }}</span> {{ sym.tengod(h.shishen) }}<br>{% endfor %}
+    </div>
+    <div class="nayin">{{ p.nayin }}<br>{{ p.dishi }}</div>
+  </div>
+  {% endfor %}
+</div>
+<p class="hint" style="margin-top:.6rem">{{ t("字的颜色代表五行。") }} {{ t("日柱空亡", inline=True) }} {{ chart.pillars[2].xunkong }} · {{ t("命宫", inline=True) }} {{ chart.minggong }} · {{ t("胎元", inline=True) }} {{ chart.taiyuan }}</p>
+
+<div class="reading">
+  <div class="panel">
+    <h3>{{ t("日主", inline=True) }} {{ sym.stem(chart.day_master.gan) }} · {{ L(chart.day_master.image, inline=True) }}</h3>
+    <div class="duo">
+      <div class="gift"><span class="k">{{ t("礼物", inline=True) }}</span><p>{{ L(chart.day_master.gift) }}</p></div>
+      <div class="shadow"><span class="k">{{ t("课题", inline=True) }}</span><p>{{ L(chart.day_master.shadow) }}</p></div>
+    </div>
+    <p class="heal" style="margin-top:1rem">{{ L(chart.day_master.heal) }}</p>
+  </div>
+
+  <div class="panel">
+    <h3>{{ t("五行分布") }}</h3>
+    <p class="hint">{{ t("这是能量的分布，不是分数：多不一定好，少也不一定坏。") }}</p>
+    <div class="wuxing">
+      {% for w in chart.wuxing %}
+      <div class="bar">
+        {{ sym.element(w.wx) }}
+        <div class="track"><div class="fill" style="width:{{ w.pct }}%;background:{{ w.color }}"></div></div>
+        <span class="muted">{{ w.pct }}%</span>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="duo" style="margin-top:1.2rem">
+      <div class="gift"><span class="k">{{ sym.element(chart.strongest) }} {{ t("旺的礼物", inline=True) }}</span><p>{{ L(chart.strong_gift) }}</p></div>
+      <div class="shadow"><span class="k">{{ sym.element(chart.strongest) }} {{ t("旺的课题", inline=True) }}</span><p>{{ L(chart.strong_shadow) }}</p></div>
+    </div>
+    <p style="margin-top:1rem"><b>{{ sym.element(chart.weakest) }} {{ t("相对少一些", inline=True) }}</b></p>
+    <p class="heal">{{ L(chart.balance_tip) }}</p>
+  </div>
+
+  {% if chart.tengods %}
+  <div class="panel">
+    <h3>{{ t("你命中的十神") }}</h3>
+    <p class="hint">{{ t("十神按出现次数排列。每一个都是一种能力，也是一个需要练习的地方。") }}</p>
+    <div class="tg-list">
+      {% for n in chart.tengods %}{% set g = SYM.TEN_GODS[n] %}
+      <div class="tg-item">
+        <h4>{{ sym.tengod(n) }} {{ L(g.arch, inline=True) }}</h4>
+        <div class="duo">
+          <div class="gift"><span class="k">{{ t("礼物", inline=True) }}</span><p>{{ L(g.gift) }}</p></div>
+          <div class="shadow"><span class="k">{{ t("课题", inline=True) }}</span><p>{{ L(g.shadow) }}</p></div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="panel">
+    <h3>{{ t("大运") }}</h3>
+    <p class="muted" style="margin-bottom:.2rem">{{ chart.qiyun }}</p>
+    <div class="dayun">
+      {% for d in chart.dayun %}<div><b>{{ d.ganzhi }}</b>{{ t("{n} 岁", inline=True, n=d.start_age) }}<br>{{ d.start_year }}</div>{% endfor %}
+    </div>
+  </div>
+</div>

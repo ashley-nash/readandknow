@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}{{ s("注册") }} · {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<section>
+  <div class="narrow">
+    <h1>{{ t('成为分析师' if role == 'analyst' else '注册账号') }}</h1>
+    <nav class="filters" aria-label="register" style="margin-bottom:1.4rem">
+      <a href="/register" {% if role != 'analyst' %}aria-current="page"{% endif %}>{{ t("我想找人解读", inline=True) }}</a>
+      <a href="/register?role=analyst" {% if role == 'analyst' %}aria-current="page"{% endif %}>{{ t("我是分析师（会员邀请）", inline=True) }}</a>
+    </nav>
+    {% if role == 'analyst' %}
+      <p class="muted">分析师注册仅向我们的抖音会员开放。请在会员群里获取邀请码。注册后完善资料、上架服务，站长审核通过后就会出现在分析师列表里。</p>
+    {% endif %}
+    <form class="stack panel" method="post" action="/register">
+      <input type="hidden" name="role" value="{{ 'analyst' if role == 'analyst' else 'client' }}">
+      <label>{{ t('展示名（客户会看到）' if role == 'analyst' else '昵称') }}
+        <input name="display_name" required maxlength="30" autocomplete="nickname">
+      </label>
+      <label>{{ t("邮箱") }}
+        <input type="email" name="email" required autocomplete="email">
+      </label>
+      <label>{{ t("密码（至少 8 位）") }}
+        <input type="password" name="password" required minlength="8" autocomplete="new-password">
+      </label>
+      {% if role == 'analyst' %}
+      <div class="row2">
+        <label>会员邀请码
+          <input name="invite_code" required placeholder="XING-XXXXXX" autocomplete="off" style="text-transform:uppercase">
+        </label>
+        <label>抖音昵称
+          <input name="douyin_name" required maxlength="50">
+        </label>
+      </div>
+      {% endif %}
+      <button class="btn primary" type="submit">{{ t('提交注册' if role == 'analyst' else '注册') }}</button>
+      <p class="hint">{{ t("已有账号？", inline=True) }} <a href="/login">{{ t("登录", inline=True) }}</a> · <a href="/about">{{ t("关于与声明", inline=True) }}</a></p>
+    </form>
+  </div>
+</section>
+{% endblock %}

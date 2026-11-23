@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% import "_birth.html" as b with context %}
+{% block title %}{{ s("八字合盘") }} · {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<section>
+  <div class="wrap">
+    <h1>{{ t("八字合盘") }}</h1>
+    <p class="no-score">{{ t("我们不给关系打分。没有“合不合”的标准答案，只有你们之间天然的默契，和需要彼此练习的地方。") }}</p>
+    {% if not chart %}
+    <form class="stack" method="post" action="/hepan">
+      <div class="hepan-form">
+        {% for who, label in [('a', '第一个人'), ('b', '第二个人')] %}
+        {% set d = hp.get(who, {}) %}
+        <fieldset>
+          <legend>{{ t(label, inline=True) }}</legend>
+          <label>{{ t("称呼") }}<input name="{{ who }}_name" maxlength="12" value="{{ d.name or '' }}" placeholder="{{ s('例如：小雨') if who == 'a' else s('例如：阿杰') }}"></label>
+          {{ b.fields(d, prefix=who ~ "_") }}
+        </fieldset>
+        {% endfor %}
+      </div>
+      <label style="max-width:22rem">{{ t("你们的关系") }}
+        <select name="relation">
+          {% for k, v in RELATION_TYPES.items() %}<option value="{{ k }}" {% if hp.get('relation') == k %}selected{% endif %}>{{ Ls(v) }}</option>{% endfor %}
+        </select>
+      </label>
+      <div><button class="btn primary" type="submit">{{ t("看看我们的合盘") }}</button></div>
+      <p class="hint">{{ t("合盘免费，出生信息不会保存到我们的服务器。") }}</p>
+    </form>
+    {% else %}
+      {% include "_hepan.html" %}
+      <div class="panel" style="margin-top:2rem">
+        <h3>{{ t("想详细了解？") }}</h3>
+        <p>{{ t("合盘里的每一条线索，放在你们真实的相处里才有意义。分析师可以结合你们的经历，聊聊怎么把默契用好、把摩擦变成成长。下单时会自动带上两个人的出生信息。") }}</p>
+        <a class="btn primary" href="/analysts?kind=hepan">{{ t("预约合盘分析师") }}</a>
+        <a class="btn ghost" href="/hepan?again=1">{{ t("重新合盘") }}</a>
+      </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

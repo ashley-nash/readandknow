@@ -1,0 +1,16 @@
+<section class="hero-ink">
+  <span class="sun" aria-hidden="true"></span>
+  {% include "_ink_mountains.html" %}
+  <div class="wrap">
+    <div class="hero-copy">
+      {% if lang_mode != 'zh' %}<p class="hero-tr">{{ tro("读懂星辰，也读懂自己") }}</p>{% endif %}
+      <p>{{ t("免费排出你的八字与紫微斗数命盘，或者静下心来摇一卦。想聊得更深，可以预约一位用心的分析师，一对一为你解读。") }}</p>
+      <div class="actions">
+        <a class="btn primary" href="/bazi">{{ t("免费排盘") }}</a>
+        <a class="btn" href="/hepan">{{ t("看看我们的合盘") }}</a>
+      </div>
+      {% include "_qian.html" %}
+    </div>
+    <h1 class="vertical">读懂星辰<br>也读懂自己</h1>
+  </div>
+</section>

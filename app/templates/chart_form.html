@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}{{ s('八字排盘' if kind == 'bazi' else '紫微命盘') }} · {{ SITE_NAME }}{% endblock %}
+{% block content %}
+{% set stack_birth = True %}
+<div class="wrap chart-page">
+  <aside>
+    <h1>{{ t('八字排盘' if kind == 'bazi' else '紫微命盘') }}</h1>
+    <p class="muted">{% if kind == 'bazi' %}{{ t("四柱八字按节气换算年月，排出十神、藏干、纳音、五行分布和十步大运。") }}{% else %}{{ t("按农历生辰安命宫、身宫，布十四主星、六吉六煞与生年四化，并标出每宫大限。") }}{% endif %}</p>
+    <form class="stack panel" method="post" action="/{{ kind }}">
+      {% include "_birth_fields.html" %}
+      <button class="btn primary" type="submit">{{ t('排出八字' if kind == 'bazi' else '排出命盘') }}</button>
+      <p class="hint">{{ t("排盘免费，出生信息不会保存到我们的服务器。") }}</p>
+    </form>
+    <p style="margin-top:1rem"><a href="/hepan">{{ t("和另一个人合盘", inline=True) }}</a></p>
+  </aside>
+
+  <div>
+    {% if chart %}
+      {% if kind == 'bazi' %}{% include "_bazi.html" %}{% else %}{% include "_ziwei.html" %}{% endif %}
+      <div class="panel" style="margin-top:2rem">
+        <h3>{{ t("想听听专业的解读？") }}</h3>
+        <p>{{ t("盘只是起点。分析师会结合你的经历和此刻的困惑，帮你把这张盘读成对你有用的话。下单时会自动带上刚才填写的出生信息。") }}</p>
+        <a class="btn primary" href="/analysts?kind={{ kind }}">{{ t("预约分析师") }}</a>
+      </div>
+    {% else %}
+      <div class="empty intro">
+        {% if kind == 'bazi' %}
+          <h3>{{ t("八字，是出生那一刻的时间印记") }}</h3>
+          <p>{{ t("年、月、日、时各由一个天干和一个地支组成，共八个字。它们的五行生克，勾勒出一个人的性格底色与人生节奏。") }}</p>
+          <p>{{ t("日柱的天干叫“日主”，代表你自己；其他字和日主的关系，就是十神。") }}</p>
+        {% else %}
+          <h3>{{ t("紫微斗数，以星辰排布人生十二宫") }}</h3>
+          <p>{{ t("以紫微星（北极星）为首的十四颗主星，按你的农历生辰落入命宫、夫妻、财帛、官禄等十二宫，每一宫对应生活的一个面向。") }}</p>
+          <p>{{ t("命宫的主星，常被看作你最核心的性格与天赋。") }}</p>
+        {% endif %}
+        <p class="muted">{{ t("在左边填写出生日期和时间即可开始。") }}</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

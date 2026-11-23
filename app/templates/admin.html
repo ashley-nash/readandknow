@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block title %}管理后台 · {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<section>
+  <div class="wrap">
+    <h1>管理后台</h1>
+    <div class="stat-row">
+      <div><small>注册用户</small><b>{{ stats.users }}</b></div>
+      <div><small>订单总数</small><b>{{ stats.orders }}</b></div>
+      <div><small>已确认收款</small><b>{{ stats.revenue|money }}</b></div>
+    </div>
+    <nav class="admin-nav" aria-label="后台分区">
+      <a href="#confirm">待确认收款（{{ to_confirm|length }}）</a>
+      <a href="#analysts">分析师</a>
+      <a href="#invites">邀请码</a>
+      <a href="#orders">全部订单</a>
+      <a href="#payouts">结算</a>
+      <a href="#settings">网站设置</a>
+    </nav>
+
+    <div class="panel" id="confirm">
+      <h2>待确认收款</h2>
+      {% if to_confirm %}
+      <div class="table-wrap"><table class="list">
+        <thead><tr><th>订单</th><th>客户</th><th>分析师</th><th>金额</th><th>付款备注</th><th></th></tr></thead>
+        <tbody>{% for o in to_confirm %}
+          <tr>
+            <td><a href="/orders/{{ o.id }}">#{{ o.id }}</a> {{ o.title }}</td>
+            <td>{{ o.client_name }}<br><small>{{ o.client_email }}</small></td>
+            <td>{{ o.analyst_name }}</td>
+            <td>{{ o.price|money }}</td>
+            <td>{{ o.payment_note }}</td>
+            <td><form method="post" action="/admin/orders/{{ o.id }}/confirm"><button class="btn small primary" type="submit">确认收款</button></form></td>
+          </tr>{% endfor %}
+        </tbody>
+      </table></div>
+      {% else %}<p class="muted">没有需要核对的付款。客户点了“我已付款”后会出现在这里，请先在你的 PayPal / 银行账户里核对到账，再点确认。</p>{% endif %}
+    </div>
+
+    <div class="panel" id="analysts">
+      <h2>分析师</h2>
+      {% if analysts %}
+      <div class="table-wrap"><table class="list">
+        <thead><tr><th>展示名</th><th>抖音昵称</th><th>邮箱</th><th>邀请码</th><th>擅长</th><th>状态</th><th></th></tr></thead>
+        <tbody>{% for a in analysts %}
+          <tr>
+            <td>{{ a.display_name }}</td><td>{{ a.douyin_name }}</td><td><small>{{ a.email }}</small></td>
+            <td class="code">{{ a.invite_code }}</td>
+            <td>{% for s in (a.specialties or '').split(',') if s %}{{ s|kind }} {% endfor %}</td>
+            <td>{{ {'pending':'待审核','approved':'已上线','suspended':'已暂停'}[a.status] }}</td>
+            <td style="white-space:nowrap">
+              {% if a.status != 'approved' %}<form style="display:inline" method="post" action="/admin/analysts/{{ a.id }}/approve"><button class="btn small primary" type="submit">通过</button></form>{% endif %}
+              {% if a.status != 'suspended' %}<form style="display:inline" method="post" action="/admin/analysts/{{ a.id }}/suspend"><button class="btn small ghost" type="submit">暂停</button></form>{% endif %}
+              {% if a.status == 'approved' %}<a class="btn small ghost" href="/analysts/{{ a.id }}">主页</a>{% endif %}
+            </td>
+          </tr>{% endfor %}
+        </tbody>
+      </table></div>
+      {% else %}<p class="muted">还没有分析师注册。先在下面生成邀请码，发到抖音会员群里。</p>{% endif %}
+    </div>
+
+    <div class="panel" id="invites">
+      <h2>分析师邀请码</h2>
+      <form class="row2" method="post" action="/admin/invites" style="align-items:end;grid-template-columns:repeat(4,1fr)">
+        <label>生成几个 <input type="number" name="count" value="1" min="1" max="50"></label>
+        <label>每个可用几次 <input type="number" name="max_uses" value="1" min="1"></label>
+        <label>备注 <input name="note" placeholder="例如：11 月会员群"></label>
+        <button class="btn" type="submit">生成邀请码</button>
+      </form>
+      {% if invites %}
+      <div class="table-wrap" style="margin-top:1rem"><table class="list">
+        <thead><tr><th>邀请码</th><th>备注</th><th>已用 / 上限</th><th>状态</th><th></th></tr></thead>
+        <tbody>{% for i in invites %}
+          <tr>
+            <td class="code">{{ i.code }}</td><td>{{ i.note }}</td><td>{{ i.used_count }} / {{ i.max_uses }}</td>
+            <td>{{ '可用' if i.active and i.used_count < i.max_uses else '停用' if not i.active else '已用完' }}</td>
+            <td><form method="post" action="/admin/invites/{{ i.code }}/toggle"><button class="btn small ghost" type="submit">{{ '停用' if i.active else '启用' }}</button></form></td>
+          </tr>{% endfor %}
+        </tbody>
+      </table></div>
+      {% endif %}
+    </div>
+
+    <div class="panel" id="orders">
+      <h2>全部订单（最近 100 单）</h2>
+      {% if orders %}
+      <div class="table-wrap"><table class="list">
+        <thead><tr><th>订单</th><th>客户</th><th>分析师</th><th>金额</th><th>状态</th><th>时间</th></tr></thead>
+        <tbody>{% for o in orders %}
+          <tr><td><a href="/orders/{{ o.id }}">#{{ o.id }}</a> {{ o.title }}</td><td>{{ o.client_name }}</td><td>{{ o.analyst_name }}</td>
+          <td>{{ o.price|money }}</td><td><span class="badge {{ o.status|status_color }}">{{ o.status|status }}</span></td><td><small>{{ o.created_at[:16] }}</small></td></tr>
+        {% endfor %}</tbody>
+      </table></div>
+      {% else %}<p class="muted">还没有订单。</p>{% endif %}
+    </div>
+
+    <div class="panel" id="payouts">
+      <h2>结算（已交付订单）</h2>
+      <p class="muted">平台服务费 {{ fee }}%。“应付分析师”是你需要转给分析师的金额。</p>
+      {% if payouts %}
+      <div class="table-wrap"><table class="list">
+        <thead><tr><th>分析师</th><th>抖音昵称</th><th>单数</th><th>订单总额</th><th>应付分析师</th></tr></thead>
+        <tbody>{% for p in payouts %}
+          <tr><td>{{ p.display_name }}</td><td>{{ p.douyin_name }}</td><td>{{ p.n }}</td><td>{{ p.gross|money }}</td><td>{{ p.net|money }}</td></tr>
+        {% endfor %}</tbody>
+      </table></div>
+      {% else %}<p class="muted">还没有已交付的订单。</p>{% endif %}
+    </div>
+
+    <div class="split" id="settings">
+      <form class="stack panel" method="post" action="/admin/settings">
+        <h2 style="margin:0">网站设置</h2>
+        <label>付款说明（客户下单后会看到）<textarea name="payment_instructions">{{ settings.payment_instructions }}</textarea></label>
+        <div class="row2">
+          <label>平台服务费（%）<input type="number" name="platform_fee_pct" min="0" max="100" step="0.5" value="{{ settings.platform_fee_pct }}"></label>
+          <label>联系方式（显示在页脚）<input name="contact" value="{{ settings.contact }}" placeholder="例如：抖音 written in Madrid"></label>
+        </div>
+        <label>顶部公告（留空则不显示）<input name="announcement" value="{{ settings.announcement }}"></label>
+        <label>网站默认风格（访客也可以在右上角自己切换）
+          <select name="default_theme">{% for k, v in THEMES.items() %}<option value="{{ k }}" {% if settings.default_theme == k %}selected{% endif %}>{{ v.zh }}</option>{% endfor %}</select>
+        </label>
+        <button class="btn primary" type="submit">保存设置</button>
+      </form>
+      <form class="stack panel" method="post" action="/admin/password">
+        <h3 style="margin:0">修改管理员密码</h3>
+        <label>旧密码 <input type="password" name="old_password" required autocomplete="current-password"></label>
+        <label>新密码（至少 10 位）<input type="password" name="new_password" required minlength="10" autocomplete="new-password"></label>
+        <button class="btn" type="submit">修改密码</button>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}

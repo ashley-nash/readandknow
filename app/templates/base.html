@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="{{ 'zh-CN' if lang_mode == 'zh' else 'zh-CN' }}" data-theme="{{ theme }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ SITE_NAME }} · {{ SITE_NAME_EN }}{% endblock %}</title>
+  <meta name="description" content="{{ SITE_NAME }}：免费八字排盘、紫微斗数命盘、六爻起卦、八字合盘，可预约分析师一对一解读。Free BaZi, Zi Wei Dou Shu, I Ching and compatibility charts.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='4' fill='%23b9382c'/><text x='16' y='23' font-size='18' text-anchor='middle' fill='%23f6efe3'>星</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;900&family=ZCOOL+XiaoWei&family=Ma+Shan+Zheng&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css?v=3">
+  <link rel="stylesheet" href="/static/css/symbols.css?v=3">
+  <link rel="stylesheet" href="/static/css/themes.css?v=3">
+</head>
+<body>
+{% set here = request.url.path ~ ('?' ~ request.url.query if request.url.query else '') %}
+<div class="topbar">
+  <div class="wrap">
+    <div class="group" aria-label="语言 Language Idioma">
+      {% for m, label in MODE_LABELS.items() %}<a href="/lang/{{ m }}?next={{ here|urlencode }}" {% if m == lang_mode %}aria-current="true"{% endif %}>{{ label }}</a>{% endfor %}
+    </div>
+    <div class="group" aria-label="风格 Style">
+      <span>{{ s("风格") }}</span>
+      {% for k, label in THEMES.items() %}<a class="theme-link" href="/theme/{{ k }}?next={{ here|urlencode }}" title="{{ Ls(label) }}" {% if k == theme %}aria-current="true"{% endif %}><span class="swatch {{ k }}"></span></a>{% endfor %}
+    </div>
+  </div>
+</div>
+{% if settings.announcement %}<div class="announce">{{ settings.announcement }}</div>{% endif %}
+<header class="nav" id="nav">
+  <div class="wrap">
+    <a class="brand" href="/" aria-label="{{ SITE_NAME }}">
+      <span class="seal" aria-hidden="true"><i>观</i><i>星</i></span>
+      <span><b>{{ SITE_NAME }}</b><span class="en">{{ SITE_NAME_EN }}</span></span>
+    </a>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="menu"
+            onclick="const n=document.getElementById('nav');n.classList.toggle('open');this.setAttribute('aria-expanded',n.classList.contains('open'))">{{ s("菜单") }}</button>
+    <ul id="menu">
+      {% set p = request.url.path %}
+      <li><a class="link" href="/bazi" {% if p == '/bazi' %}aria-current="page"{% endif %}>{{ t("八字排盘") }}</a></li>
+      <li><a class="link" href="/ziwei" {% if p == '/ziwei' %}aria-current="page"{% endif %}>{{ t("紫微命盘") }}</a></li>
+      <li><a class="link" href="/liuyao" {% if p == '/liuyao' %}aria-current="page"{% endif %}>{{ t("六爻起卦") }}</a></li>
+      <li><a class="link" href="/hepan" {% if p == '/hepan' %}aria-current="page"{% endif %}>{{ t("八字合盘") }}</a></li>
+      <li><a class="link" href="/analysts" {% if p.startswith('/analysts') %}aria-current="page"{% endif %}>{{ t("找分析师") }}</a></li>
+      {% if user %}
+        <li><a class="link" href="/me">{{ t('管理后台') if user.role == 'admin' else t('我的') }}</a></li>
+        <li><form method="post" action="/logout"><button class="btn small ghost" type="submit">{{ t("退出") }}</button></form></li>
+      {% else %}
+        <li><a class="link" href="/login">{{ t("登录") }}</a></li>
+        <li><a class="btn small" href="/register">{{ t("注册") }}</a></li>
+      {% endif %}
+    </ul>
+  </div>
+</header>
+
+{% if messages %}
+<div class="wrap" role="status">
+  {% for kind, msg in messages %}<div class="flash {{ kind }}">{{ t(msg, inline=True) }}</div>{% endfor %}
+</div>
+{% endif %}
+
+<main>{% block content %}{% endblock %}</main>
+
+<footer>
+  <div class="wrap">
+    <div>
+      <p>{{ SITE_NAME }} · readandknow.eu</p>
+      <p>{{ t("命理解读是一种了解自己的视角，仅供参考与自我探索，不能替代医疗、心理、法律或投资等专业意见。命盘是地图，方向盘在你手里。") }}</p>
+      {% if settings.contact %}<p>{{ t("联系我们", inline=True) }}：{{ settings.contact }}</p>{% endif %}
+      <p>© {{ current_year }} {{ SITE_NAME }}</p>
+    </div>
+    <nav aria-label="footer">
+      <a href="/about">{{ t("关于与声明") }}</a>
+      <a href="/register?role=analyst">{{ t("成为分析师") }}</a>
+    </nav>
+  </div>
+</footer>
+<script src="/static/js/sym.js?v=3"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

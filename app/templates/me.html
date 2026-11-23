@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}{{ s('我的') }} · {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<section>
+  <div class="wrap">
+    <h1>{{ t('你好，{n}', n=user.display_name) }}</h1>
+
+    {% if user.role == 'analyst' %}
+      {% if profile.status == 'pending' %}
+        <div class="flash warn">你的分析师资料正在等待站长审核。审核前，请先<a href="/me/profile">完善资料并上架至少一项服务</a>。</div>
+      {% elif profile.status == 'suspended' %}
+        <div class="flash warn">你的分析师主页已暂停展示，如有疑问请联系站长。</div>
+      {% endif %}
+
+      <div class="stat-row" style="margin:1.6rem 0">
+        <div><small>已完成订单收入</small><b>{{ earnings.gross|money }}</b></div>
+        <div><small>平台服务费</small><b>{{ earnings.fee|round(1) }}%</b></div>
+        <div><small>你可结算</small><b>{{ earnings.net|money }}</b></div>
+      </div>
+
+      <div class="panel">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.6rem">
+          <h2 style="margin:0">待处理的订单</h2>
+          <span><a href="/me/profile">编辑资料与服务</a>{% if profile.status == 'approved' %} · <a href="/analysts/{{ user.id }}">查看我的主页</a>{% endif %}</span>
+        </div>
+        {% if incoming %}
+          {% with rows=incoming, other_label='客户', other_key='client_name' %}{% include "_orders_table.html" %}{% endwith %}
+        {% else %}
+          <p class="muted" style="margin-top:1rem">还没有订单。客户付款并经平台确认后，订单会出现在这里。</p>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <div class="panel">
+      <h2>{{ t('我预约的解读') }}</h2>
+      {% if my_orders %}
+        {% with rows=my_orders, other_label='分析师', other_key='analyst_name' %}{% include "_orders_table.html" %}{% endwith %}
+      {% else %}
+        <p class="muted">{{ t('你还没有预约过解读。') }}</p>
+        <a class="btn" href="/analysts">{{ t('找一位分析师') }}</a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}

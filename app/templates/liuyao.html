@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}{{ s("六爻起卦") }} · {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<div class="wrap chart-page">
+  <aside>
+    <h1>{{ t("六爻起卦") }}</h1>
+    <p class="muted">{{ t("一事一问。把心里那件具体的事想清楚，写下来，然后安静地摇六次。") }}</p>
+    <form class="stack panel" method="post" action="/liuyao">
+      <label>{{ t("你想问的事") }}
+        <textarea name="question" maxlength="200" required placeholder="{{ s('例如：这次换工作，对我来说是好的选择吗？') }}">{{ chart.question if chart else '' }}</textarea>
+      </label>
+      {% include "_coins.html" %}
+      <button class="btn primary" type="submit" data-after-toss>{{ t("看卦象") }}</button>
+    </form>
+  </aside>
+  <div>
+    {% if chart %}
+      {% include "_liuyao.html" %}
+      <div class="panel" style="margin-top:2rem">
+        <h3>{{ t("请分析师为这一卦断事") }}</h3>
+        <p>{{ t("六爻要结合用神、旺衰、动变与应期来断，同一卦问不同的事，答案也不同。下单时可以直接带上这一卦。") }}</p>
+        <a class="btn primary" href="/analysts?kind=liuyao">{{ t("预约分析师") }}</a>
+      </div>
+    {% else %}
+      <div class="empty intro">
+        <h3>{{ t("为什么是六次？") }}</h3>
+        <p>{{ t("每次掷三枚铜钱得到一爻，从下往上累积六爻成一卦。动爻会变，于是有“本卦”和“变卦”：事情现在的样子，和它可能的走向。") }}</p>
+        <p>{{ t("问题越具体，卦象越好解读。“我会幸福吗”不如“我和他这段关系，接下来三个月会怎样”。") }}</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}<script src="/static/js/coins.js?v=3"></script>{% endblock %}

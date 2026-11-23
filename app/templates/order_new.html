@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% import "_birth.html" as b with context %}
+{% block title %}{{ s("预约解读") }} · {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<section>
+  <div class="{{ 'wrap' if svc.kind == 'hepan' else 'narrow' }}">
+    <h1>{{ t("预约解读") }}</h1>
+    <div class="panel" style="margin-bottom:1.2rem">
+      <div class="service" style="padding:0">
+        <div><b>{{ svc.title }}</b> <span class="tag">{{ t(svc.kind|kind, inline=True) }}</span><br>
+          <small>{{ t("分析师", inline=True) }} {{ svc.analyst_name }} · {{ t("约 {n} 天内交付", inline=True, n=svc.delivery_days) }}</small></div>
+        <div class="price">{{ svc.price|money }}</div>
+      </div>
+    </div>
+
+    <form class="stack panel" method="post" action="/order/new">
+      <input type="hidden" name="service_id" value="{{ svc.id }}">
+      {% if svc.kind in ('bazi', 'ziwei') %}
+        {{ b.fields(birth) }}
+        <label>{{ t("出生地（城市即可，供分析师参考）") }}<input name="birth_place" maxlength="100" placeholder="{{ s('例如：中国 唐山 / Spain Madrid') }}"></label>
+        <label>{{ t("你最想了解的事（选填）") }}
+          <textarea name="question" maxlength="1000" placeholder="{{ s('例如：最近在考虑换城市生活，想看看未来两三年的事业和感情方向。') }}"></textarea>
+        </label>
+      {% elif svc.kind == 'hepan' %}
+        <div class="hepan-form">
+          {% for who, label in [('a', '第一个人'), ('b', '第二个人')] %}
+          {% set d = hp.get(who, {}) %}
+          <fieldset>
+            <legend>{{ t(label, inline=True) }}</legend>
+            <label>{{ t("称呼") }}<input name="{{ who }}_name" maxlength="12" value="{{ d.name or '' }}"></label>
+            {{ b.fields(d, prefix=who ~ "_") }}
+          </fieldset>
+          {% endfor %}
+        </div>
+        <label>{{ t("你们的关系") }}
+          <select name="relation">{% for k, v in RELATION_TYPES.items() %}<option value="{{ k }}" {% if hp.get('relation') == k %}selected{% endif %}>{{ Ls(v) }}</option>{% endfor %}</select>
+        </label>
+        <label>{{ t("你最想了解的事（选填）") }}
+          <textarea name="question" maxlength="1000" placeholder="{{ s('例如：我们经常为小事争吵，想知道怎么更好地相处。') }}"></textarea>
+        </label>
+      {% else %}
+        <label>{{ t("你想问的事") }}
+          <textarea name="question" maxlength="1000" required placeholder="{{ s('一事一问，越具体越好。') }}">{{ gua.question if gua else '' }}</textarea>
+        </label>
+        {% if gua %}
+          <label class="choice" style="display:flex"><input type="checkbox" name="use_last_gua" value="1" checked
+            onchange="document.getElementById('new-gua').hidden=this.checked"> {{ t("使用我 {t} 刚摇出的那一卦", inline=True, t=gua.time) }}</label>
+        {% endif %}
+        <div id="new-gua" {% if gua %}hidden{% endif %}>
+          {% include "_coins.html" %}
+          <p class="hint">{{ t("如果不摇，系统会在你下单时自动为你起一卦。") }}</p>
+        </div>
+      {% endif %}
+      <button class="btn primary" type="submit">{{ t("提交订单") }}</button>
+      <p class="hint">{{ t("提交后会看到付款说明。平台确认收款后，分析师才会开始解读。你的信息只有这位分析师和平台能看到。") }}</p>
+    </form>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}{% if svc.kind == 'liuyao' %}<script src="/static/js/coins.js?v=3"></script>{% endif %}{% endblock %}

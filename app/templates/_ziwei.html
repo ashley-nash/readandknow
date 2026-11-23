@@ -1,0 +1,45 @@
+{% import "_sym.html" as sym with context %}
+<div class="chart-head">
+  <span>{{ t("公历", inline=True) }} <b>{{ chart.solar }}</b></span>
+  <span><b>{{ chart.lunar }}</b></span>
+  <span>{{ chart.yinyang }} · {{ chart.ju }}</span>
+</div>
+
+<div class="ziwei" role="table" aria-label="紫微斗数命盘">
+  {% for p in chart.grid %}
+  <div class="palace {% if p.is_ming %}ming{% endif %}" style="grid-row:{{ p.row }};grid-column:{{ p.col }}" role="cell">
+    {% if p.is_shen %}<span class="shen">身</span>{% endif %}
+    <div class="main">
+      {% for s in p.main %}<span>{{ s.name }}{% if s.hua %}<i class="hua hua-{{ s.hua }}">{{ s.hua }}</i>{% endif %}</span>{% endfor %}
+    </div>
+    <div class="aux">
+      {% for s in p.aux %}<span class="{{ 'good' if s.good }}">{{ s.name }}{% if s.hua %}<i class="hua hua-{{ s.hua }}">{{ s.hua }}</i>{% endif %}</span>{% endfor %}
+    </div>
+    <div class="foot"><span class="pname">{{ t(p.name) }}</span><span class="dx">{{ p.daxian }} <br>{{ p.stem }}{{ sym.branch(p.branch) }}</span></div>
+  </div>
+  {% endfor %}
+  <div class="center">
+    <b>{{ chart.ju }}</b>
+    <span>命宫在{{ chart.ming_branch }} · 身宫在{{ chart.shen_branch }}（{{ chart.shen_palace }}）</span>
+    <span>命主 {{ chart.ming_zhu }} · 身主 {{ chart.shen_zhu }}</span>
+    <span>生年四化：{% for h in chart.sihua %}{{ h.star }}<i class="hua hua-{{ h.tag }}">{{ h.tag }}</i> {% endfor %}</span>
+  </div>
+</div>
+<p class="hint" style="margin-top:.6rem">{{ t("每宫右下角是十年大限的年龄和宫的干支，地支可以悬停看生肖。青色辅星为吉星，灰色为煞星或中性星。禄、权、科、忌是生年四化。") }}</p>
+
+<div class="reading">
+  <div class="panel">
+    <h3>{{ t("命宫主星") }}{% if chart.ming_borrowed %} <small class="muted">{{ t("（命宫无主星，借对宫迁移宫）", inline=True) }}</small>{% endif %}</h3>
+    <p class="no-score">{{ t("主星没有好坏之分，只是不同的天赋，和与之相伴的课题。") }}</p>
+    {% for r in chart.readings %}
+      <div class="tg-item" style="margin-top:1.2rem">
+        <h4><b style="font-family:var(--display);font-weight:400;font-size:1.3rem">{{ r.star }}</b> {{ L(r.title, inline=True) }}</h4>
+        <div class="duo">
+          <div class="gift"><span class="k">{{ t("礼物", inline=True) }}</span><p>{{ L(r.gift) }}</p></div>
+          <div class="shadow"><span class="k">{{ t("课题", inline=True) }}</span><p>{{ L(r.shadow) }}</p></div>
+        </div>
+        <p class="heal" style="margin-top:.8rem">{{ L(r.heal) }}</p>
+      </div>
+    {% endfor %}
+  </div>
+</div>

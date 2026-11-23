@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block title %}#{{ o.id }} · {{ SITE_NAME }}{% endblock %}
+{% block content %}
+{% set steps = [('pending_payment','下单'), ('payment_submitted','已付款'), ('paid','平台确认'), ('in_progress','分析师接单'), ('delivered','交付报告')] %}
+{% set order_idx = {'pending_payment':0,'payment_submitted':1,'paid':2,'in_progress':3,'delivered':4,'cancelled':-1}[o.status] %}
+<section>
+  <div class="wrap">
+    <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:1rem;align-items:baseline">
+      <h1 style="margin:0">#{{ o.id }} · {{ o.title }}</h1>
+      <span class="badge {{ o.status|status_color }}">{{ t(o.status|status, inline=True) }}</span>
+    </div>
+    <p class="muted">{{ t(o.kind|kind, inline=True) }} · {{ o.price|money }} · {{ t("客户", inline=True) }} {{ o.client_name }} · {{ t("分析师", inline=True) }} {{ o.analyst_name }} · {{ o.created_at[:16] }}</p>
+    {% if o.status != 'cancelled' %}
+    <ol class="timeline" aria-label="progress">
+      {% for key, label in steps %}<li class="{{ 'done' if loop.index0 <= order_idx }}">{{ t(label) }}</li>{% endfor %}
+    </ol>
+    {% endif %}
+  </div>
+</section>
+
+<div class="wrap split" style="padding-bottom:4rem">
+  <div>
+    {% if o.report and not is_analyst %}
+      <div class="panel">
+        <h2>{{ t("解读报告") }}</h2>
+        <div class="report">{{ o.report|nl2br }}</div>
+        <p class="hint" style="margin-top:1rem">{{ t("有不明白的地方，可以在下方留言追问。") }} {{ (o.delivered_at or '')[:16] }}</p>
+      </div>
+    {% endif %}
+
+    {% if is_analyst and o.status in ('in_progress', 'delivered') %}
+      <form class="stack panel" method="post" action="/orders/{{ o.id }}/deliver">
+        <h2 style="margin:0">{{ '修改解读报告' if o.status == 'delivered' else '撰写解读报告' }}</h2>
+        <p class="hint">建议结构：整体性格的礼物与课题 → 客户关心的问题 → 近期节奏与时间节点 → 温和而具体的建议。不打分、不下绝对结论，避免恐吓式的说法。</p>
+        <textarea name="report" required style="min-height:22rem">{{ o.report }}</textarea>
+        <button class="btn primary" type="submit">{{ '更新报告' if o.status == 'delivered' else '交付报告' }}</button>
+      </form>
+    {% endif %}
+
+    <div class="panel">
+      <h2>{{ t('卦象' if o.kind == 'liuyao' else '命盘') }}</h2>
+      {% if o.question %}<p><b>{{ t('所问之事' if o.kind == 'liuyao' else '想了解', inline=True) }}：</b>{{ o.question|nl2br }}</p>{% endif %}
+      {% if inputs.birth_place %}<p class="muted">{{ t("出生地", inline=True) }}：{{ inputs.birth_place }}</p>{% endif %}
+      {% if chart %}
+        {% if o.kind == 'bazi' %}{% include "_bazi.html" %}{% elif o.kind == 'ziwei' %}{% include "_ziwei.html" %}{% elif o.kind == 'hepan' %}{% include "_hepan.html" %}{% else %}{% include "_liuyao.html" %}{% endif %}
+      {% endif %}
+    </div>
+
+    <div class="panel" id="messages">
+      <h2>{{ t("留言") }}</h2>
+      {% for m in msgs %}
+        <div class="msg"><div class="who">{{ m.display_name }}{% if m.role == 'admin' %} · {{ t("平台", inline=True) }}{% endif %} · <small>{{ m.created_at[:16] }}</small></div>{{ m.body|nl2br }}</div>
+      {% else %}
+        <p class="muted">{{ t("还没有留言。可以先和分析师打个招呼，或补充你的情况。") if is_client else t("还没有留言。") }}</p>
+      {% endfor %}
+      {% if o.status != 'cancelled' %}
+      <form class="stack" method="post" action="/orders/{{ o.id }}/message" style="margin-top:1rem">
+        <label>{{ t("写留言") }} <textarea name="body" required maxlength="2000" style="min-height:5rem"></textarea></label>
+        <button class="btn small" type="submit">{{ t("发送留言") }}</button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+
+  <aside>
+    {% if is_client and o.status == 'pending_payment' %}
+      <div class="panel">
+        <h3>{{ t("付款说明") }}</h3>
+        <p>{{ settings.payment_instructions|nl2br }}</p>
+        <p>{{ t("订单号", inline=True) }}：<b class="code">#{{ o.id }}</b>　{{ t("金额", inline=True) }}：<b>{{ o.price|money }}</b></p>
+        <form class="stack" method="post" action="/orders/{{ o.id }}/paid">
+          <label>{{ t("付款方式或付款备注（方便平台核对）") }}<input name="payment_note" maxlength="200" placeholder="PayPal / Bizum …"></label>
+          <button class="btn primary" type="submit">{{ t("我已付款") }}</button>
+        </form>
+        <form method="post" action="/orders/{{ o.id }}/cancel" style="margin-top:.8rem"><button class="btn small ghost" type="submit">{{ t("取消订单") }}</button></form>
+      </div>
+    {% elif o.status == 'payment_submitted' %}
+      <div class="panel">
+        <h3>{{ t("正在核对收款") }}</h3>
+        <p>{{ t("平台确认收到付款后，分析师会开始解读。") }}</p>
+        {% if o.payment_note %}<p><small>{{ t("付款备注", inline=True) }}：{{ o.payment_note }}</small></p>{% endif %}
+        {% if is_admin %}
+          <form method="post" action="/admin/orders/{{ o.id }}/confirm"><button class="btn primary" type="submit">确认已收款</button></form>
+        {% endif %}
+      </div>
+    {% elif o.status == 'paid' %}
+      <div class="panel">
+        <h3>{{ t("等待分析师接单") }}</h3>
+        {% if is_analyst %}
+          <p>客户已付款。接单后请在约定时间内交付报告。</p>
+          <form method="post" action="/orders/{{ o.id }}/accept"><button class="btn primary" type="submit">接单</button></form>
+        {% else %}
+          <p>{{ t("付款已确认，分析师接单后会开始为你解读。") }}</p>
+        {% endif %}
+      </div>
+    {% elif o.status == 'in_progress' and not is_analyst %}
+      <div class="panel"><h3>{{ t("解读中") }}</h3><p>{{ t("分析师正在用心为你解读，完成后报告会出现在这里。") }}</p></div>
+    {% elif o.status == 'delivered' and is_client %}
+      <div class="panel">
+        {% if review %}
+          <h3>{{ t("你的评价") }}</h3>
+          <p><span class="rating">{{ review.rating|stars }}</span><br>{{ review.comment }}</p>
+        {% else %}
+          <h3>{{ t("评价这次解读") }}</h3>
+          <form class="stack" method="post" action="/orders/{{ o.id }}/review">
+            <fieldset class="stars-input" style="border:0;padding:0;margin:0">
+              <legend class="hint">{{ t("你对这次服务满意吗？", inline=True) }}</legend>
+              {% for n in [5,4,3,2,1] %}<input type="radio" name="rating" id="r{{ n }}" value="{{ n }}" {% if n == 5 %}checked{% endif %}><label for="r{{ n }}" title="{{ n }}">★</label>{% endfor %}
+            </fieldset>
+            <label>{{ t("说说你的感受（会公开显示，不含你的名字）") }}<textarea name="comment" maxlength="1000"></textarea></label>
+            <button class="btn primary" type="submit">{{ t("提交评价") }}</button>
+          </form>
+        {% endif %}
+      </div>
+    {% elif o.status == 'cancelled' %}
+      <div class="panel"><h3>{{ t("订单已取消") }}</h3></div>
+    {% endif %}
+
+    {% if is_admin and o.status not in ('cancelled', 'delivered') %}
+      <form class="panel" method="post" action="/orders/{{ o.id }}/cancel"><button class="btn small ghost" type="submit">管理员：取消此订单</button></form>
+    {% endif %}
+  </aside>
+</div>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}{{ a.display_name }} · {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<section>
+  <div class="wrap split">
+    <div>
+      <div style="display:flex;gap:1.2rem;align-items:center;margin-bottom:1.4rem">
+        <div class="avatar lg" aria-hidden="true">{{ a.display_name[:1] }}</div>
+        <div>
+          <h1 style="margin:0">{{ a.display_name }}</h1>
+          {% if a.title %}<div class="muted">{{ a.title }}</div>{% endif %}
+          <div class="meta">
+            {% if a.review_count %}<span class="rating">{{ a.rating|stars }} {{ a.rating }}</span><span>{{ t("{n} 条评价", inline=True, n=a.review_count) }}</span>{% else %}<span>{{ t("新入驻", inline=True) }}</span>{% endif %}
+            <span>{{ t("已完成 {n} 单", inline=True, n=a.done_count) }}</span>
+            {% if a.years_exp %}<span>{{ t("研习 {n} 年", inline=True, n=a.years_exp) }}</span>{% endif %}
+          </div>
+          <div class="tags">{% for sp in a.spec_list %}<span class="tag">{{ t(sp|kind, inline=True) }}</span>{% endfor %}</div>
+        </div>
+      </div>
+      {% if a.bio %}<div class="panel"><h3>{{ t("关于我") }}</h3><p>{{ a.bio|nl2br }}</p></div>{% endif %}
+
+      <div class="panel">
+        <h3>{{ t("客户评价") }}</h3>
+        {% for r in reviews %}
+          <div class="review">
+            <span class="rating">{{ r.rating|stars }}</span> <small>{{ t(r.kind|kind, inline=True) }} · {{ r.created_at[:10] }}</small>
+            {% if r.comment %}<p style="margin:.3rem 0 0">{{ r.comment }}</p>{% endif %}
+          </div>
+        {% else %}
+          <p class="muted">{{ t("还没有评价。完成订单的客户才能留下评价。") }}</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    <aside class="panel">
+      <h3>{{ t("服务") }}</h3>
+      {% for sv in services %}
+        <div class="service">
+          <div>
+            <b>{{ sv.title }}</b> <span class="tag">{{ t(sv.kind|kind, inline=True) }}</span>
+            {% if sv.description %}<p class="hint" style="margin:.3rem 0">{{ sv.description }}</p>{% endif %}
+            <small>{{ t("约 {n} 天内交付", inline=True, n=sv.delivery_days) }}</small>
+          </div>
+          <div style="text-align:right">
+            <div class="price">{{ sv.price|money }}</div>
+            <a class="btn small primary" href="/order/new?service_id={{ sv.id }}">{{ t("预约") }}</a>
+          </div>
+        </div>
+      {% else %}
+        <p class="muted">{{ t("这位分析师还没有上架服务。") }}</p>
+      {% endfor %}
+    </aside>
+  </div>
+</section>
+{% endblock %}

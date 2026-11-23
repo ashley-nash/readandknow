@@ -1,0 +1,52 @@
+{#- 可悬停的符号：天干 / 地支（生肖）/ 十神 / 五行。悬停（手机点一下）弹出动画和利弊。
+    用法：{% import "_sym.html" as sym with context %}  然后 {{ sym.stem("甲") }} -#}
+
+{% macro _rows(gift, shadow) -%}
+<span class="pop-row gift"><span class="pop-k">{{ t("礼物", inline=True) }}</span>{{ L(gift) }}</span>
+<span class="pop-row shadow"><span class="pop-k">{{ t("课题", inline=True) }}</span>{{ L(shadow) }}</span>
+{%- endmacro %}
+
+{% macro stem(g, cls="") -%}
+{%- set i = SYM.STEMS[g] -%}{%- set e = SYM.ELEMENTS[i.wx] -%}
+<button type="button" class="sym sym-stem wx-{{ i.wx }} {{ cls }}" data-sym><span class="sg">{{ g }}</span><span class="pop" role="tooltip">
+<span class="pop-icon a-{{ e.anim }}" aria-hidden="true">{{ i.icon }}</span>
+<span class="pop-title"><b>{{ g }}</b> <i>{{ i.py }}</i> {{ L(i.kind, inline=True) }}</span>
+<span class="pop-sub">{{ L(i.image, inline=True) }}</span>
+{{ _rows(i.gift, i.shadow) }}</span></button>
+{%- endmacro %}
+
+{% macro branch(z, cls="") -%}
+{%- set i = SYM.BRANCHES[z] -%}
+<button type="button" class="sym sym-branch wx-{{ i.wx }} {{ cls }}" data-sym><span class="sg">{{ z }}</span><span class="pop" role="tooltip">
+<span class="pop-icon a-{{ i.anim }}" aria-hidden="true">{{ i.icon }}</span>
+<span class="pop-title"><b>{{ z }}</b> <i>{{ i.py }}</i> {{ L(i.animal, inline=True) }}</span>
+<span class="pop-sub">{{ L(SYM.ELEMENTS[i.wx].name, inline=True) }} · {{ i.hours }}</span>
+{{ _rows(i.gift, i.shadow) }}</span></button>
+{%- endmacro %}
+
+{% macro animal(z, cls="") -%}
+{#- 生肖版：显示动物图标本身，悬停时动起来 -#}
+{%- set i = SYM.BRANCHES[z] -%}
+<button type="button" class="sym sym-animal {{ cls }}" data-sym><span class="sg"><span class="a-{{ i.anim }} live">{{ i.icon }}</span><small>{{ z }} · {{ i.animal.zh }}</small></span><span class="pop" role="tooltip">
+<span class="pop-title"><b>{{ z }}</b> <i>{{ i.py }}</i> {{ L(i.animal, inline=True) }}</span>
+<span class="pop-sub">{{ L(SYM.ELEMENTS[i.wx].name, inline=True) }} · {{ i.hours }}</span>
+{{ _rows(i.gift, i.shadow) }}</span></button>
+{%- endmacro %}
+
+{% macro tengod(name, cls="") -%}
+{%- if name in SYM.TEN_GODS -%}{%- set g = SYM.TEN_GODS[name] -%}
+<button type="button" class="sym sym-tengod {{ cls }}" data-sym><span class="sg">{{ name }}</span><span class="pop" role="tooltip">
+<span class="pop-icon a-{{ g.anim }}" aria-hidden="true">{{ g.icon }}</span>
+<span class="pop-title"><b>{{ name }}</b>{% if lang_mode != "zh" %} <i>{{ one(g.name) }}</i>{% endif %}</span>
+<span class="pop-sub">{{ L(g.arch, inline=True) }}</span>
+{{ _rows(g.gift, g.shadow) }}</span></button>
+{%- else -%}<span class="sym-plain">{{ t(name, inline=True) }}</span>{%- endif -%}
+{%- endmacro %}
+
+{% macro element(w, cls="") -%}
+{%- set e = SYM.ELEMENTS[w] -%}
+<button type="button" class="sym sym-element wx-{{ w }} {{ cls }}" data-sym><span class="sg">{{ w }}</span><span class="pop" role="tooltip">
+<span class="pop-icon a-{{ e.anim }}" aria-hidden="true">{{ e.icon }}</span>
+<span class="pop-title"><b>{{ w }}</b> <i>{{ e.py }}</i>{% if lang_mode != "zh" %} <i>{{ one(e.name) }}</i>{% endif %}</span>
+{{ _rows(e.gift, e.shadow) }}</span></button>
+{%- endmacro %}

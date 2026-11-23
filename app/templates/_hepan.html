@@ -1,0 +1,44 @@
+{% import "_sym.html" as sym with context %}
+{% macro person(p) -%}
+<div class="person">
+  <div class="who">{{ p.name }}</div>
+  <div class="muted">{{ p.chart.solar }} · {{ t(p.chart.gender, inline=True) }} · {{ L(p.animal, inline=True) }}</div>
+  <div class="gz">{% for pl in p.chart.pillars %}{{ sym.stem(pl.gan) }}{{ sym.branch(pl.zhi) }}{% if not loop.last %}&nbsp;{% endif %}{% endfor %}</div>
+</div>
+{%- endmacro %}
+{% macro symbol(x) -%}
+{%- if x.kind == 'stem' %}{{ sym.stem(x.sym) }}{% elif x.kind == 'branch' %}{{ sym.animal(x.sym) }}{% else %}{{ sym.tengod(x.sym) }}{% endif -%}
+{%- endmacro %}
+
+<div class="pair-head">
+  {{ person(chart.a) }}
+  <div class="knot" aria-hidden="true">合</div>
+  {{ person(chart.b) }}
+</div>
+<p class="muted">{{ t("关系", inline=True) }}：{{ L(chart.relation_label, inline=True) }}</p>
+
+{% for card in chart.cards %}
+<article class="rel-card">
+  <header>
+    <h3>{{ L(card.area) }}</h3>
+    {% if card.left %}
+    <div class="rel-syms">
+      <span class="name">{{ card.left.name }}</span>{{ symbol(card.left) }}
+      <span class="x">×</span>
+      {{ symbol(card.right) }}<span class="name">{{ card.right.name }}</span>
+    </div>
+    {% endif %}
+  </header>
+  {% for it in card["items"] %}
+  <div class="rel-item">
+    <h4>{% if it.tengod %}{{ sym.tengod(it.tengod) }} {% endif %}{{ L(it.title) }}</h4>
+    {% if it.rel %}<p>{{ L(it.rel) }}</p>{% endif %}
+    <div class="duo">
+      {% set k1, k2 = ("礼物", "课题") if it.tengod else ("默契之处", "需要练习的地方") %}
+      <div class="gift"><span class="k">{{ t(k1, inline=True) }}</span><p>{{ L(it.gift) }}</p></div>
+      <div class="shadow"><span class="k">{{ t(k2, inline=True) }}</span><p>{{ L(it.challenge) }}</p></div>
+    </div>
+  </div>
+  {% endfor %}
+</article>
+{% endfor %}

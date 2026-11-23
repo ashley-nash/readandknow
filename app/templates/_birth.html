@@ -1,0 +1,16 @@
+{% macro fields(birth, prefix="", stack=False) -%}
+<div class="row2" {% if stack %}style="grid-template-columns:1fr"{% endif %}>
+  <label>{{ t("出生日期（公历）") }}
+    <input type="date" name="{{ prefix }}birth_date" required min="1900-01-01" max="2100-12-31" value="{{ birth.date or '' }}">
+  </label>
+  <label>{{ t("出生时间") }}
+    <input type="time" name="{{ prefix }}birth_time" required value="{{ birth.time or '' }}">
+  </label>
+</div>
+<p class="hint">{{ t("请用出生地当时的钟表时间。不确定几点出生，可以填大概时辰的中间，例如午时填 12:00。") }}</p>
+<fieldset class="choice" style="border:0;padding:0;margin:0">
+  <legend class="hint" style="margin-bottom:.3rem">{{ t("性别（影响大运顺逆）", inline=True) }}</legend>
+  <label><input type="radio" name="{{ prefix }}gender" value="女" {% if birth.gender != '男' %}checked{% endif %}> {{ t("女", inline=True) }}</label>
+  <label><input type="radio" name="{{ prefix }}gender" value="男" {% if birth.gender == '男' %}checked{% endif %}> {{ t("男", inline=True) }}</label>
+</fieldset>
+{%- endmacro %}

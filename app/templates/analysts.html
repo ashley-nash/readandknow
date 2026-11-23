@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}{{ s("分析师") }} · {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<section>
+  <div class="wrap">
+    <h1>{{ t("分析师") }}</h1>
+    <p class="muted">{{ t("每一位分析师都经过邀请与审核。点进主页可以看到他们的服务、价格和客户的真实评价。") }}</p>
+    <nav class="filters" aria-label="filter">
+      <a href="/analysts" {% if not kind %}aria-current="page"{% endif %}>{{ t("全部", inline=True) }}</a>
+      {% for k, v in KINDS.items() %}<a href="/analysts?kind={{ k }}" {% if kind == k %}aria-current="page"{% endif %}>{{ t(v, inline=True) }}</a>{% endfor %}
+    </nav>
+    {% if analysts %}
+      <div class="analyst-list">{% for a in analysts %}{% include "_analyst_card.html" %}{% endfor %}</div>
+    {% else %}
+      <div class="empty" style="margin-top:1.6rem">
+        <p>{{ t("暂时还没有这个方向的分析师上线。先试试免费排盘，或者过几天再来看看。") }}</p>
+        <a class="btn" href="/{{ kind or 'bazi' }}">{{ t("免费排盘") }}</a>
+      </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

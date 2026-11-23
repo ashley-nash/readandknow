@@ -1,0 +1,13 @@
+<a class="analyst" href="/analysts/{{ a.id }}">
+  <div class="avatar" aria-hidden="true">{{ a.display_name[:1] }}</div>
+  <div>
+    <h3>{{ a.display_name }}</h3>
+    {% if a.title %}<div class="title">{{ a.title }}</div>{% endif %}
+    <div class="meta">
+      {% if a.review_count %}<span class="rating">{{ a.rating|stars }} {{ a.rating }}</span><span>{{ t("{n} 条评价", inline=True, n=a.review_count) }}</span>{% else %}<span>{{ t("新入驻", inline=True) }}</span>{% endif %}
+      <span>{{ t("已完成 {n} 单", inline=True, n=a.done_count) }}</span>
+      {% if a.min_price %}<span>{{ t("{p} 起", inline=True, p=a.min_price|money) }}</span>{% endif %}
+    </div>
+    <div class="tags">{% for sp in a.spec_list %}<span class="tag">{{ t(sp|kind, inline=True) }}</span>{% endfor %}</div>
+  </div>
+</a>
